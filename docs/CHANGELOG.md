@@ -6,6 +6,9 @@
 
 ### Fixes
 
+- Fix colors never being highlighted in **C#** files: Rider tokenizes string literals as `STRING_LITERAL_REGULAR` /
+  `STRING_LITERAL_VERBATIM` / raw-string variants, none of which matched the expected `STRING_LITERAL`
+
 ### Other
 
 ### Bump

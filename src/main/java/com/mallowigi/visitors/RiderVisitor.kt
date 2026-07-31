@@ -51,7 +51,11 @@ class RiderVisitor : ColorVisitor() {
   )
 
   private val allowedTypes = setOf(
-    "STRING_LITERAL"
+    "STRING_LITERAL",                 // C/C++
+    "STRING_LITERAL_REGULAR",         // C#: "text"
+    "STRING_LITERAL_VERBATIM",        // C#: @"text"
+    "SINGLE_LINE_RAW_STRING_LITERAL", // C#: """text"""
+    "MULTI_LINE_RAW_STRING_LITERAL"   // C#: """ text on its own lines """
   )
 
   override fun clone(): HighlightVisitor = RiderVisitor()
@@ -74,7 +78,8 @@ class RiderVisitor : ColorVisitor() {
     val type = PsiUtilCore.getElementType(element).toString()
     if (type !in allowedTypes) return null
 
-    val value = element.text
+    // The `@` of a verbatim string is part of the token, and no parser expects it.
+    val value = element.text.removePrefix(VERBATIM_PREFIX)
     return ColorSearchEngine.getColor(value, this)
   }
 
@@ -86,5 +91,9 @@ class RiderVisitor : ColorVisitor() {
 
     val value = element.text
     return ColorSearchEngine.getAllColors(value, this)
+  }
+
+  companion object {
+    private const val VERBATIM_PREFIX = "@"
   }
 }

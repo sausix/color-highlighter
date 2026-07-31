@@ -29,8 +29,6 @@ package com.mallowigi.utils
 import com.dynatrace.hash4j.hashing.HashFunnel
 import com.dynatrace.hash4j.hashing.Hashing
 import com.intellij.ide.plugins.IdeaPluginDescriptor
-import com.intellij.ide.plugins.PluginDetailsService
-import com.intellij.ide.plugins.PluginDetailsService.PluginDetails
 import com.intellij.ide.plugins.PluginManagerCore
 import com.intellij.openapi.extensions.PluginId
 import com.intellij.openapi.util.IconLoader
@@ -40,13 +38,12 @@ import com.mallowigi.ColorHighlighterBundle
 import java.awt.Color
 import javax.swing.Icon
 
-@Suppress("UnstableApiUsage")
-fun getPlugin(): PluginDetails? =
-  PluginDetailsService.getInstance().findDetails(PluginId.getId("com.mallowigi.colorHighlighter"))
+// PluginDetailsService exists only since 262; PluginManagerCore keeps the plugin loadable on 261.
+fun getPlugin(): IdeaPluginDescriptor? =
+  PluginManagerCore.getPlugin(PluginId.getId("com.mallowigi.colorHighlighter"))
 
-@Suppress("UnstableApiUsage")
 fun getVersion(): String {
-  val plugin: PluginDetails? = getPlugin()
+  val plugin: IdeaPluginDescriptor? = getPlugin()
   return when {
     plugin != null -> plugin.version ?: ""
     else           -> ColorHighlighterBundle.message("plugin.version")
