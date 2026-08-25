@@ -31,6 +31,7 @@ import com.intellij.openapi.editor.markup.GutterIconRenderer
 import com.intellij.openapi.ide.CopyPasteManager
 import com.intellij.ui.ColorChooserService
 import com.intellij.ui.ColorUtil
+import com.intellij.ui.picker.ColorListener
 import com.intellij.ui.scale.JBUIScale
 import com.intellij.util.ui.ColorIcon
 import com.intellij.util.ui.EmptyIcon
@@ -86,10 +87,17 @@ class GutterColorRenderer(private val color: Color?) : GutterIconRenderer() {
       override fun actionPerformed(e: AnActionEvent) {
         val editor = e.getData(CommonDataKeys.EDITOR) ?: return
         val currentColor = color ?: return
-        val newColor = ColorChooserService.getInstance().showDialog(
-          editor.project, editor.component, message("replace.color"), currentColor, false
+
+        // The dialog probes the Robot-based pipette before opening, which can fail on Wayland.
+        ColorChooserService.getInstance().showPopup(
+          editor.project,
+          currentColor,
+          editor,
+          ColorListener { newColor, _ -> copyColor(currentColor, newColor) },
+          currentColor.alpha != OPAQUE,
+          false,
+          null
         )
-        copyColor(currentColor, newColor)
       }
 
       private fun copyColor(currentColor: Color, newColor: Color?) {
@@ -119,5 +127,6 @@ class GutterColorRenderer(private val color: Color?) : GutterIconRenderer() {
 
   companion object {
     private const val ICON_SIZE = 12
+    private const val OPAQUE = 255
   }
 }
