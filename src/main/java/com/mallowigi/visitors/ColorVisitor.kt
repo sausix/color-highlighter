@@ -31,10 +31,6 @@ import com.intellij.openapi.project.DumbAware
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.mallowigi.config.home.ColorHighlighterState.Companion.instance
-import com.mallowigi.config.home.HighlightingStyles
-import com.mallowigi.highlighters.RoundedBackgroundPainter
-import com.mallowigi.highlighters.RoundedHighlight
-import com.mallowigi.highlighters.RoundedPaintStyle
 import com.mallowigi.search.ColorMatch
 import com.mallowigi.search.parsers.ColorParser
 import java.awt.Color
@@ -43,14 +39,7 @@ import java.awt.Color
 abstract class ColorVisitor : HighlightVisitor, LangVisitor, DumbAware {
 
   private var highlightInfoHolder: HighlightInfoHolder? = null
-  private val roundedHighlights = mutableListOf<RoundedHighlight>()
   internal val config = instance
-  private val roundedStyles = setOf(
-    HighlightingStyles.BACKGROUND,
-    HighlightingStyles.BORDER,
-    HighlightingStyles.UNDERLINE_PILL,
-    HighlightingStyles.GLOW
-  )
 
   /**
    * Highlight the element with the given color.
@@ -61,30 +50,12 @@ abstract class ColorVisitor : HighlightVisitor, LangVisitor, DumbAware {
   fun highlight(element: PsiElement?, color: Color) {
     if (!instance.isEnabled) return
 
-    val textRange = element?.textRange
-    val style = instance.highlightingStyle
-    if (style in roundedStyles && textRange != null) {
-      roundedHighlights += RoundedHighlight(
-        range = IntRange(textRange.startOffset, textRange.endOffset),
-        color = color,
-        paintStyle = style.toRoundedPaintStyle()
-      )
-    }
-
     assert(highlightInfoHolder != null)
     highlightInfoHolder!!.add(ColorHighlighter.highlightColor(element, color))
   }
 
   fun highlight(color: Color, range: IntRange) {
     if (!instance.isEnabled) return
-    val style = instance.highlightingStyle
-    if (style in roundedStyles) {
-      roundedHighlights += RoundedHighlight(
-        range = range,
-        color = color,
-        paintStyle = style.toRoundedPaintStyle()
-      )
-    }
     assert(highlightInfoHolder != null)
     highlightInfoHolder!!.add(ColorHighlighter.highlightColor(range, color))
   }
@@ -104,28 +75,12 @@ abstract class ColorVisitor : HighlightVisitor, LangVisitor, DumbAware {
     holder: HighlightInfoHolder,
     action: Runnable
   ): Boolean {
+    // Keep the visible styling in HighlightInfo. Incremental daemon passes only visit changed PSI
+    // ranges, so rebuilding a separate editor-wide highlighter list here drops unchanged colors.
     highlightInfoHolder = holder
-    roundedHighlights.clear()
-    val visitorKey = this::class.qualifiedName ?: this::class.java.name
-
     try {
       action.run()
     } finally {
-      val style = instance.highlightingStyle
-      if (instance.isEnabled && style in roundedStyles) {
-        RoundedBackgroundPainter.apply(
-          file = file,
-          visitorKey = visitorKey,
-          highlights = roundedHighlights,
-          arcRadius = instance.roundedArcRadius
-        )
-      } else {
-        RoundedBackgroundPainter.clear(
-          file = file,
-          visitorKey = visitorKey
-        )
-      }
-      roundedHighlights.clear()
       highlightInfoHolder = null
     }
     return true
@@ -169,12 +124,4 @@ abstract class ColorVisitor : HighlightVisitor, LangVisitor, DumbAware {
   override fun canAcceptMultiple(): Boolean = false
 
   override fun acceptMultiple(element: PsiElement): List<ColorMatch>? = null
-
-  private fun HighlightingStyles.toRoundedPaintStyle(): RoundedPaintStyle = when (this) {
-    HighlightingStyles.BACKGROUND -> RoundedPaintStyle.BACKGROUND
-    HighlightingStyles.BORDER -> RoundedPaintStyle.BORDER
-    HighlightingStyles.UNDERLINE_PILL -> RoundedPaintStyle.UNDERLINE_PILL
-    HighlightingStyles.GLOW -> RoundedPaintStyle.GLOW
-    else -> RoundedPaintStyle.BACKGROUND
-  }
 }
