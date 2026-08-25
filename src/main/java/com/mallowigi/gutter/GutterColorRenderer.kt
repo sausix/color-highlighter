@@ -123,7 +123,8 @@ class GutterColorRenderer(private val color: Color?) : GutterIconRenderer() {
 
   override fun hashCode(): Int = Objects.hash(color)
 
-  override fun getAlignment(): Alignment = Alignment.RIGHT
+  // IntelliJ lays out RIGHT-aligned renderers from right to left, reversing source order.
+  override fun getAlignment(): Alignment = Alignment.LEFT
 
   companion object {
     private const val ICON_SIZE = 12
