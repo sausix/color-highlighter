@@ -322,6 +322,16 @@ class ColorHighlighterConfigurable : BoundSearchableConfigurable(
             .gap(RightGap.SMALL)
             .component
         }.rowComment(message("ColorHighlighterSettingsForm.textCheckbox.toolTipText"))
+
+        row {
+          icon(TEXT_ICON)
+            .gap(RightGap.SMALL)
+          checkBox(message("ColorHighlighterSettingsForm.fallbackCheckbox.text"))
+            .bindSelected(settingsClone::isFallbackEnabled)
+            .enabledIf(enabledCheckbox.selected)
+            .gap(RightGap.SMALL)
+            .component
+        }.rowComment(message("ColorHighlighterSettingsForm.fallbackCheckbox.toolTipText"))
       }
 
       row {

@@ -111,8 +111,10 @@ dependencies {
       "com.intellij.css",
       "com.intellij.properties",
       "com.intellij.modules.json",
+      "JavaScript",
       "org.jetbrains.plugins.yaml",
       "org.intellij.plugins.markdown",
+      "org.toml.lang",
       "org.jetbrains.kotlin",
       "org.intellij.groovy",
     )

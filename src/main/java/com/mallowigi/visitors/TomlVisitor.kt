@@ -29,8 +29,8 @@ package com.mallowigi.visitors
 import com.intellij.codeInsight.daemon.impl.HighlightVisitor
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
-import com.intellij.psi.util.PsiUtilCore
 import com.mallowigi.search.ColorSearchEngine
+import org.toml.lang.psi.TomlLiteral
 import java.awt.Color
 
 class TomlVisitor : ColorVisitor() {
@@ -38,18 +38,12 @@ class TomlVisitor : ColorVisitor() {
     "toml"
   )
 
-  private val allowedTypes = setOf(
-    "BASIC_STRING",
-    "NUMBER"
-  )
-
   override fun clone(): HighlightVisitor = TomlVisitor()
 
   override fun suitableForFile(file: PsiFile): Boolean = extensions.contains(file.virtualFile?.extension)
 
   override fun accept(element: PsiElement): Color? {
-    val type = PsiUtilCore.getElementType(element).toString()
-    if (type !in allowedTypes) return null
+    if (element !is TomlLiteral) return null
 
     val value = element.text
     return ColorSearchEngine.getColor(value, this)

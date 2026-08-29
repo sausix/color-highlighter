@@ -46,16 +46,17 @@ class TextVisitor : ColorVisitor() {
 
   override fun visit(element: PsiElement) {
     val value = element.text
-    if (value is String) splitText(value)
+    // Text blocks are element-relative; HighlightInfo ranges must be absolute file offsets.
+    if (value is String) splitText(value, element.textRange.startOffset)
   }
 
   override fun shouldVisit(): Boolean = config.isTextEnabled
 
-  private fun splitText(text: String) {
+  private fun splitText(text: String, startOffset: Int) {
     val blocks = text.split(Regex("\\b"))
     var cursor = 0
     blocks.forEach { block ->
-      visitElement(Pair(IntRange(cursor, cursor + block.length), block))
+      visitElement(Pair(IntRange(startOffset + cursor, startOffset + cursor + block.length), block))
       cursor += block.length
     }
   }

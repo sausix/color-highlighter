@@ -27,9 +27,9 @@
 package com.mallowigi.visitors
 
 import com.intellij.codeInsight.daemon.impl.HighlightVisitor
+import com.intellij.lang.javascript.psi.JSLiteralExpression
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
-import com.intellij.psi.util.PsiUtilCore
 import com.mallowigi.search.ColorMatch
 import com.mallowigi.search.ColorSearchEngine
 import java.awt.Color
@@ -40,14 +40,8 @@ class VueVisitor : ColorVisitor() {
     "vuex"
   )
 
-  private val allowedTypes = listOf(
-    "JS:NUMERIC_LITERAL",
-    "JS:STRING_LITERAL"
-  )
-
   override fun accept(element: PsiElement): Color? {
-    val type = PsiUtilCore.getElementType(element).toString()
-    if (type !in allowedTypes) return null
+    if (element !is JSLiteralExpression) return null
 
     val value = element.text
     return ColorSearchEngine.getColor(value!!, this)
@@ -56,8 +50,7 @@ class VueVisitor : ColorVisitor() {
   override fun canAcceptMultiple(): Boolean = true
 
   override fun acceptMultiple(element: PsiElement): List<ColorMatch>? {
-    val type = PsiUtilCore.getElementType(element).toString()
-    if (type !in allowedTypes) return null
+    if (element !is JSLiteralExpression) return null
 
     val value = element.text
     return ColorSearchEngine.getAllColors(value!!, this)

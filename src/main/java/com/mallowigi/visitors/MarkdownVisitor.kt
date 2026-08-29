@@ -32,6 +32,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiUtilCore
 import com.mallowigi.config.home.ColorHighlighterState
 import com.mallowigi.search.ColorSearchEngine
+import org.intellij.plugins.markdown.lang.MarkdownTokenTypes
 import java.awt.Color
 
 class MarkdownVisitor : ColorVisitor() {
@@ -48,8 +49,8 @@ class MarkdownVisitor : ColorVisitor() {
   override fun shouldVisit(): Boolean = ColorHighlighterState.instance.isMarkdownEnabled
 
   override fun accept(element: PsiElement): Color? {
-    val type = PsiUtilCore.getElementType(element).toString()
-    if (type != "Markdown:Markdown:TEXT") return null
+    // Do not compare IElementType.toString(); its presentation changed in the 262 platform.
+    if (PsiUtilCore.getElementType(element) != MarkdownTokenTypes.TEXT) return null
 
     val value = element.text
     if (value !is String) return null

@@ -29,13 +29,15 @@ package com.mallowigi.visitors
 import com.intellij.codeInsight.daemon.impl.HighlightVisitor
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
-import com.intellij.psi.util.PsiUtilCore
+import com.intellij.psi.xml.XmlToken
+import com.intellij.psi.xml.XmlTokenType
 import com.mallowigi.search.ColorMatch
 import com.mallowigi.search.ColorSearchEngine
 import java.awt.Color
 
 class XmlVisitor : ColorVisitor() {
-  private val allowedTypes = setOf("XML_DATA_CHARACTERS", "XML_ATTRIBUTE_VALUE_TOKEN")
+  // Token constants keep XML and HTML parsing independent from platform-specific debug names.
+  private val allowedTypes = setOf(XmlTokenType.XML_DATA_CHARACTERS, XmlTokenType.XML_ATTRIBUTE_VALUE_TOKEN)
 
   val extensions: Set<String> = setOf(
     "xml",
@@ -52,8 +54,7 @@ class XmlVisitor : ColorVisitor() {
     extensions.contains(file.virtualFile?.extension)
 
   override fun accept(element: PsiElement): Color? {
-    val type = PsiUtilCore.getElementType(element).toString()
-    if (type !in allowedTypes) return null
+    if (element !is XmlToken || element.tokenType !in allowedTypes) return null
 
     val value = element.text
     if (value !is String) return null
@@ -63,8 +64,7 @@ class XmlVisitor : ColorVisitor() {
   override fun canAcceptMultiple(): Boolean = true
 
   override fun acceptMultiple(element: PsiElement): List<ColorMatch>? {
-    val type = PsiUtilCore.getElementType(element).toString()
-    if (type !in allowedTypes) return null
+    if (element !is XmlToken || element.tokenType !in allowedTypes) return null
 
     val value = element.text
     if (value !is String) return null

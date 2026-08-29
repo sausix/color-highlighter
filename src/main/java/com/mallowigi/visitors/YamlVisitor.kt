@@ -30,20 +30,28 @@ import com.intellij.codeInsight.daemon.impl.HighlightVisitor
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiUtilCore
-import com.intellij.util.ArrayUtil
 import com.mallowigi.search.ColorMatch
 import com.mallowigi.search.ColorSearchEngine
+import org.jetbrains.yaml.YAMLTokenTypes
 import org.jetbrains.yaml.psi.YAMLFile
 import java.awt.Color
 
 class YamlVisitor : ColorVisitor() {
+
+  // Use YAML's public token constants; IElementType.toString() is not a stable contract.
+  private val allowedTypes = setOf(
+    YAMLTokenTypes.TEXT,
+    YAMLTokenTypes.SCALAR_STRING,
+    YAMLTokenTypes.SCALAR_DSTRING,
+    YAMLTokenTypes.COMMENT
+  )
 
   override fun clone(): HighlightVisitor = YamlVisitor()
 
   override fun suitableForFile(file: PsiFile): Boolean = file is YAMLFile
 
   override fun accept(element: PsiElement): Color? {
-    if (!ArrayUtil.contains(PsiUtilCore.getElementType(element).toString(), "text", "scalar string", "comment", "scalar dstring")) {
+    if (PsiUtilCore.getElementType(element) !in allowedTypes) {
       return null
     }
 
@@ -54,7 +62,7 @@ class YamlVisitor : ColorVisitor() {
   override fun canAcceptMultiple(): Boolean = false
 
   override fun acceptMultiple(element: PsiElement): List<ColorMatch>? {
-    if (!ArrayUtil.contains(PsiUtilCore.getElementType(element).toString(), "text", "scalar string", "comment", "scalar dstring")) {
+    if (PsiUtilCore.getElementType(element) !in allowedTypes) {
       return null
     }
 

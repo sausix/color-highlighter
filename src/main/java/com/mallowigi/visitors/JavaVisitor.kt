@@ -30,7 +30,9 @@ import com.intellij.codeInsight.daemon.impl.HighlightVisitor
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiJavaFile
-import com.intellij.psi.util.PsiUtilCore
+import com.intellij.psi.PsiLiteralExpression
+import com.intellij.psi.PsiNewExpression
+import com.intellij.psi.PsiReferenceExpression
 import com.mallowigi.search.ColorPrefixes.COLOR
 import com.mallowigi.search.ColorPrefixes.COLOR_METHOD
 import com.mallowigi.search.ColorSearchEngine
@@ -40,13 +42,6 @@ import com.mallowigi.search.parsers.ColorParser
 import java.awt.Color
 
 class JavaVisitor : ColorVisitor() {
-
-  private val allowedTypes = listOf(
-    "INTEGER_LITERAL",
-    "STRING_LITERAL",
-    "NEW_EXPRESSION",
-    "REFERENCE_EXPRESSION"
-  )
 
   override fun clone(): HighlightVisitor = JavaVisitor()
 
@@ -65,8 +60,7 @@ class JavaVisitor : ColorVisitor() {
   override fun suitableForFile(file: PsiFile): Boolean = file is PsiJavaFile
 
   override fun accept(element: PsiElement): Color? {
-    val type = PsiUtilCore.getElementType(element).toString()
-    if (type !in allowedTypes) return null
+    if (element !is PsiLiteralExpression && element !is PsiNewExpression && element !is PsiReferenceExpression) return null
 
     val value = element.text
     return ColorSearchEngine.getColor(value, this)

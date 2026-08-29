@@ -29,12 +29,19 @@ package com.mallowigi.visitors
 import com.intellij.codeInsight.daemon.impl.HighlightVisitor
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
+import com.intellij.psi.css.impl.CssElementTypes
 import com.intellij.psi.util.PsiUtilCore
 import com.mallowigi.search.ColorSearchEngine
 import java.awt.Color
 
 class CssVisitor : ColorVisitor() {
-  private val allowedTypes = setOf("CSS_IDENT", "CSS_NUMBER", "CSS_HASH", "CSS_FUNCTION")
+  // PSI debug names changed in 262; exported token constants are the supported comparison API.
+  private val allowedTypes = setOf(
+    CssElementTypes.CSS_IDENT,
+    CssElementTypes.CSS_NUMBER,
+    CssElementTypes.CSS_HASH,
+    CssElementTypes.CSS_FUNCTION
+  )
 
   private val extensions: Set<String> = setOf(
     "css",
@@ -51,7 +58,7 @@ class CssVisitor : ColorVisitor() {
     extensions.contains(file.virtualFile?.extension)
 
   override fun accept(element: PsiElement): Color? {
-    val type = PsiUtilCore.getElementType(element).toString()
+    val type = PsiUtilCore.getElementType(element)
     if (type !in allowedTypes) return null
 
     val value = element.text

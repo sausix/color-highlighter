@@ -29,24 +29,20 @@ package com.mallowigi.visitors
 import com.intellij.codeInsight.daemon.impl.HighlightVisitor
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
-import com.intellij.psi.util.PsiUtilCore
 import com.mallowigi.search.ColorPrefixes.COLOR_METHOD
 import com.mallowigi.search.ColorPrefixes.KT_COLOR
 import com.mallowigi.search.ColorSearchEngine
 import com.mallowigi.search.parsers.ColorCtorParser
 import com.mallowigi.search.parsers.ColorMethodParser
 import com.mallowigi.search.parsers.ColorParser
+import org.jetbrains.kotlin.psi.KtCallExpression
+import org.jetbrains.kotlin.psi.KtConstantExpression
 import org.jetbrains.kotlin.psi.KtFile
+import org.jetbrains.kotlin.psi.KtNameReferenceExpression
+import org.jetbrains.kotlin.psi.KtStringTemplateExpression
 import java.awt.Color
 
 class KotlinVisitor : ColorVisitor() {
-
-  private val allowedTypes = listOf(
-    "INTEGER_CONSTANT",
-    "STRING_TEMPLATE",
-    "CALL_EXPRESSION",
-    "REFERENCE_EXPRESSION"
-  )
 
   override fun clone(): HighlightVisitor = KotlinVisitor()
 
@@ -65,8 +61,12 @@ class KotlinVisitor : ColorVisitor() {
   override fun suitableForFile(file: PsiFile): Boolean = file is KtFile
 
   override fun accept(element: PsiElement): Color? {
-    val type = PsiUtilCore.getElementType(element).toString()
-    if (type !in allowedTypes) return null
+    if (
+      element !is KtConstantExpression &&
+      element !is KtStringTemplateExpression &&
+      element !is KtCallExpression &&
+      element !is KtNameReferenceExpression
+    ) return null
 
     val value = element.text
     return ColorSearchEngine.getColor(value, this)

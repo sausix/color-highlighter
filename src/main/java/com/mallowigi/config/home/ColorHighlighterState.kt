@@ -75,6 +75,9 @@ class ColorHighlighterState : SimplePersistentStateComponent<ColorHighlighterSta
 
     var isTextEnabled: Boolean by property(false)
 
+    // Independent from regular text files: this controls unsupported-language fallback parsing.
+    var isFallbackEnabled: Boolean by property(true)
+
     var isMarkdownEnabled: Boolean by property(true)
 
     var isMarkupEnabled: Boolean by property(true)
@@ -190,6 +193,12 @@ class ColorHighlighterState : SimplePersistentStateComponent<ColorHighlighterSta
       state.isTextEnabled = value
     }
 
+  var isFallbackEnabled: Boolean
+    get() = state.isFallbackEnabled
+    set(value) {
+      state.isFallbackEnabled = value
+    }
+
   var isMarkdownEnabled: Boolean
     get() = state.isMarkdownEnabled
     set(value) {
@@ -245,6 +254,7 @@ class ColorHighlighterState : SimplePersistentStateComponent<ColorHighlighterSta
     this.isRiderColorMethodEnabled = true
     this.isRustColorCtorEnabled = true
     this.isTextEnabled = false
+    this.isFallbackEnabled = true
     this.isTupleDetectEnabled = true
     this.version = VERSION
 
@@ -285,6 +295,7 @@ class ColorHighlighterState : SimplePersistentStateComponent<ColorHighlighterSta
     clone.isRiderColorMethodEnabled = this.isRiderColorMethodEnabled
     clone.isRustColorCtorEnabled = this.isRustColorCtorEnabled
     clone.isTextEnabled = this.isTextEnabled
+    clone.isFallbackEnabled = this.isFallbackEnabled
     clone.isTupleDetectEnabled = this.isTupleDetectEnabled
     clone.version = this.version
     return clone
@@ -308,6 +319,7 @@ class ColorHighlighterState : SimplePersistentStateComponent<ColorHighlighterSta
     this.isRiderColorMethodEnabled = state.isRiderColorMethodEnabled
     this.isRustColorCtorEnabled = state.isRustColorCtorEnabled
     this.isTextEnabled = state.isTextEnabled
+    this.isFallbackEnabled = state.isFallbackEnabled
     this.isTupleDetectEnabled = state.isTupleDetectEnabled
 
     updateEditors()
@@ -339,6 +351,7 @@ class ColorHighlighterState : SimplePersistentStateComponent<ColorHighlighterSta
     if (isRiderColorMethodEnabled != other.isRiderColorMethodEnabled) return false
     if (isRustColorCtorEnabled != other.isRustColorCtorEnabled) return false
     if (isTextEnabled != other.isTextEnabled) return false
+    if (isFallbackEnabled != other.isFallbackEnabled) return false
     if (isTupleDetectEnabled != other.isTupleDetectEnabled) return false
     if (version != other.version) return false
     return true
@@ -363,6 +376,7 @@ class ColorHighlighterState : SimplePersistentStateComponent<ColorHighlighterSta
     result = 31 * result + isRiderColorMethodEnabled.hashCode()
     result = 31 * result + isRustColorCtorEnabled.hashCode()
     result = 31 * result + isTextEnabled.hashCode()
+    result = 31 * result + isFallbackEnabled.hashCode()
     result = 31 * result + isTupleDetectEnabled.hashCode()
     result = 31 * result + version.hashCode()
     return result
