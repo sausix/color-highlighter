@@ -26,11 +26,15 @@
 
 package com.mallowigi.visitors
 
+import com.intellij.codeInsight.daemon.LineMarkerSettings
 import com.intellij.codeInsight.daemon.impl.HighlightVisitor
+import com.intellij.lang.injection.InjectedLanguageManager
+import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.xml.XmlToken
 import com.intellij.psi.xml.XmlTokenType
+import com.intellij.ui.ColorLineMarkerProvider
 import com.mallowigi.search.ColorMatch
 import com.mallowigi.search.ColorSearchEngine
 import java.awt.Color
@@ -72,6 +76,15 @@ class XmlVisitor : ColorVisitor() {
   }
 
   override fun shouldVisit(): Boolean = config.isMarkupEnabled
+
+  override fun shouldShowGutterIcon(element: PsiElement, range: TextRange): Boolean {
+    if (!LineMarkerSettings.getSettings().isEnabled(ColorLineMarkerProvider.INSTANCE)) return true
+
+    val injectedElement = InjectedLanguageManager.getInstance(element.project)
+      .findInjectedElementAt(element.containingFile, range.startOffset)
+    // CSS injections, such as an HTML style attribute, have their own color gutter annotator.
+    return injectedElement?.language?.id != "CSS"
+  }
 
   override fun clone(): HighlightVisitor = XmlVisitor()
 }

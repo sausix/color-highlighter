@@ -165,7 +165,9 @@ object ColorSearchEngine {
         }
       }
     }
-    return matches
+    // A value such as "ffffff" matches both the hexadecimal and alphabetic-name patterns.
+    // Keep only one highlight when independent patterns resolve to the same range and color.
+    return matches.distinct()
   }
 
 }

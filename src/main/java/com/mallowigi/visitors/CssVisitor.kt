@@ -26,11 +26,18 @@
 
 package com.mallowigi.visitors
 
+import com.intellij.codeInsight.daemon.LineMarkerSettings
 import com.intellij.codeInsight.daemon.impl.HighlightVisitor
+import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
+import com.intellij.psi.css.CssFunction
+import com.intellij.psi.css.CssTerm
+import com.intellij.psi.css.browse.CssColorGutterRenderer
 import com.intellij.psi.css.impl.CssElementTypes
+import com.intellij.psi.css.impl.util.CssColorPsiUtil
 import com.intellij.psi.util.PsiUtilCore
+import com.intellij.ui.ColorLineMarkerProvider
 import com.mallowigi.search.ColorSearchEngine
 import java.awt.Color
 
@@ -67,6 +74,18 @@ class CssVisitor : ColorVisitor() {
   }
 
   override fun shouldVisit(): Boolean = config.isCssColorEnabled
+
+  override fun shouldShowGutterIcon(element: PsiElement, range: TextRange): Boolean {
+    if (!LineMarkerSettings.getSettings().isEnabled(ColorLineMarkerProvider.INSTANCE)) return true
+
+    // The CSS annotator already owns gutter previews for semantic color terms and functions.
+    // Keep this plugin's renderer for color-like identifiers outside those CSS value nodes.
+    val nativeColorElement = generateSequence(element) { it.parent }
+      .firstOrNull { it is CssFunction || it is CssTerm }
+      ?: return true
+    val isNativeColor = nativeColorElement !is CssTerm || CssColorPsiUtil.isColorTerm(nativeColorElement)
+    return !isNativeColor || CssColorGutterRenderer.create(nativeColorElement) == null
+  }
 
   override fun clone(): HighlightVisitor = CssVisitor()
 }

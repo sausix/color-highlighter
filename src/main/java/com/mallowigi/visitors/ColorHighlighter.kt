@@ -41,18 +41,18 @@ import java.awt.Color
 internal object ColorHighlighter {
   private val COLOR_ELEMENT: HighlightInfoType = HighlightInfoTypeImpl(HighlightSeverity.INFORMATION, DefaultLanguageHighlighterColors.CONSTANT)
 
-  fun highlightColor(element: PsiElement?, color: Color): HighlightInfo? =
-    getHighlightInfoBuilder(color, element!!.textRange).range(element).create()
+  fun highlightColor(element: PsiElement?, color: Color, showGutterIcon: Boolean): HighlightInfo? =
+    getHighlightInfoBuilder(color, element!!.textRange, showGutterIcon).range(element).create()
 
-  fun highlightColor(range: IntRange, color: Color): HighlightInfo? =
-    getHighlightInfoBuilder(color, TextRange(range.first, range.last)).range(range.first, range.last).create()
+  fun highlightColor(range: IntRange, color: Color, showGutterIcon: Boolean): HighlightInfo? =
+    getHighlightInfoBuilder(color, TextRange(range.first, range.last), showGutterIcon).range(range.first, range.last).create()
 
-  private fun getHighlightInfoBuilder(color: Color, range: TextRange): HighlightInfo.Builder {
+  private fun getHighlightInfoBuilder(color: Color, range: TextRange, showGutterIcon: Boolean): HighlightInfo.Builder {
     val highlighter = HighlighterStyleFactory.instance.getHighlighter(ColorHighlighterState.instance.highlightingStyle)
 
     var newHighlightInfo = HighlightInfo.newHighlightInfo(COLOR_ELEMENT).textAttributes(highlighter.getAttributesFlyweight(color))
 
-    if (GutterColorLineMarkerProvider.isEnabled()) {
+    if (showGutterIcon && GutterColorLineMarkerProvider.isEnabled()) {
       newHighlightInfo = newHighlightInfo.gutterIconRenderer(GutterColorRenderer(color, range))
     }
     return newHighlightInfo

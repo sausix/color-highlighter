@@ -28,6 +28,7 @@ package com.mallowigi.visitors
 import com.intellij.codeInsight.daemon.impl.HighlightVisitor
 import com.intellij.codeInsight.daemon.impl.analysis.HighlightInfoHolder
 import com.intellij.openapi.project.DumbAware
+import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.mallowigi.config.home.ColorHighlighterState.Companion.instance
@@ -51,13 +52,21 @@ abstract class ColorVisitor : HighlightVisitor, LangVisitor, DumbAware {
     if (!instance.isEnabled) return
 
     assert(highlightInfoHolder != null)
-    highlightInfoHolder!!.add(ColorHighlighter.highlightColor(element, color))
+    val range = element!!.textRange
+    highlightInfoHolder!!.add(ColorHighlighter.highlightColor(element, color, shouldShowGutterIcon(element, range)))
+  }
+
+  fun highlight(element: PsiElement, color: Color, range: IntRange) {
+    if (!instance.isEnabled) return
+    assert(highlightInfoHolder != null)
+    val textRange = TextRange(range.first, range.last)
+    highlightInfoHolder!!.add(ColorHighlighter.highlightColor(range, color, shouldShowGutterIcon(element, textRange)))
   }
 
   fun highlight(color: Color, range: IntRange) {
     if (!instance.isEnabled) return
     assert(highlightInfoHolder != null)
-    highlightInfoHolder!!.add(ColorHighlighter.highlightColor(range, color))
+    highlightInfoHolder!!.add(ColorHighlighter.highlightColor(range, color, true))
   }
 
   /**
@@ -95,7 +104,7 @@ abstract class ColorVisitor : HighlightVisitor, LangVisitor, DumbAware {
             element.textRange.startOffset + match.range.first,
             element.textRange.startOffset + match.range.last
           )
-          highlight(match.color, absoluteRange)
+          highlight(element, match.color, absoluteRange)
         }
       }
 
@@ -124,4 +133,7 @@ abstract class ColorVisitor : HighlightVisitor, LangVisitor, DumbAware {
   override fun canAcceptMultiple(): Boolean = false
 
   override fun acceptMultiple(element: PsiElement): List<ColorMatch>? = null
+
+  /** Lets language visitors defer gutter rendering to a native language annotator without losing text highlighting. */
+  open fun shouldShowGutterIcon(element: PsiElement, range: TextRange): Boolean = true
 }

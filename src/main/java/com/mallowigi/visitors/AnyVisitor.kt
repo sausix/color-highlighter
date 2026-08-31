@@ -27,65 +27,13 @@
 package com.mallowigi.visitors
 
 import com.intellij.codeInsight.daemon.impl.HighlightVisitor
-import com.intellij.ide.plugins.PluginManagerCore
-import com.intellij.openapi.extensions.PluginId
+import com.intellij.openapi.fileTypes.PlainTextFileType
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.mallowigi.search.ColorMatch
 import com.mallowigi.search.ColorSearchEngine
 
 class AnyVisitor : ColorVisitor() {
-  // These IDs mirror plugin.xml's optional descriptors. A loaded language visitor always wins;
-  // otherwise this visitor treats the file as text without requiring that language plugin.
-  private val languagePlugins: Map<String, String> = mapOf(
-    "asp" to "com.intellij.modules.rider",
-    "c" to "com.intellij.modules.c-capable",
-    "cjs" to "JavaScript",
-    "cpp" to "com.intellij.modules.cpp-plugin-capable",
-    "cs" to "com.intellij.modules.rider",
-    "css" to "com.intellij.css",
-    "dart" to "Dart",
-    "go" to "com.intellij.modules.go-capable",
-    "groovy" to "org.intellij.groovy",
-    "h" to "com.intellij.modules.c-capable",
-    "html" to "com.intellij.modules.lang",
-    "java" to "com.intellij.java",
-    "js" to "JavaScript",
-    "json" to "com.intellij.modules.json",
-    "jsx" to "JavaScript",
-    "kt" to "org.jetbrains.kotlin",
-    "kts" to "org.jetbrains.kotlin",
-    "less" to "com.intellij.css",
-    "lua" to "com.tang",
-    "md" to "org.intellij.plugins.markdown",
-    "mdx" to "org.intellij.plugins.markdown",
-    "mjs" to "JavaScript",
-    "objc" to "com.intellij.modules.cidr.lang",
-    "php" to "com.jetbrains.php",
-    "phpt" to "com.jetbrains.php",
-    "properties" to "com.intellij.properties",
-    "py" to "com.intellij.modules.python",
-    "r" to "R4Intellij",
-    "rb" to "org.jetbrains.plugins.ruby",
-    "rbs" to "org.jetbrains.plugins.ruby",
-    "rs" to "com.jetbrains.rust",
-    "sass" to "com.intellij.css",
-    "scala" to "org.intellij.scala",
-    "scss" to "com.intellij.css",
-    "sql" to "com.intellij.database",
-    "styl" to "com.intellij.css",
-    "svelte" to "dev.blachut.svelte.lang",
-    "svg" to "com.intellij.modules.lang",
-    "swift" to "com.intellij.modules.cidr.lang",
-    "toml" to "org.toml.lang",
-    "ts" to "JavaScript",
-    "tsx" to "JavaScript",
-    "vue" to "org.jetbrains.plugins.vue",
-    "xml" to "com.intellij.modules.lang",
-    "yaml" to "org.jetbrains.plugins.yaml",
-    "yml" to "org.jetbrains.plugins.yaml",
-  )
-
   private val configurableTextExtensions: Set<String> = setOf("ini", "log", "rst", "txt")
 
   override fun suitableForFile(file: PsiFile): Boolean {
@@ -94,8 +42,9 @@ class AnyVisitor : ColorVisitor() {
     val extension = file.virtualFile?.extension?.lowercase()
     if (extension in configurableTextExtensions) return false
 
-    val pluginId = languagePlugins[extension] ?: return true
-    return !PluginManagerCore.isLoaded(PluginId.getId(pluginId))
+    // Missing language support leaves textual files assigned to the platform's plain-text type.
+    // A loaded language plugin supplies a more specific type and therefore keeps priority.
+    return file.fileType == PlainTextFileType.INSTANCE
   }
 
   override fun canAcceptMultiple(): Boolean = true
